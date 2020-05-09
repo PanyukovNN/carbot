@@ -1,19 +1,20 @@
 package com.zylex.carbot.service.parser;
 
+import com.zylex.carbot.exception.ParseProcessorException;
 import com.zylex.carbot.model.Car;
+import com.zylex.carbot.model.CarStatus;
 import com.zylex.carbot.model.Filial;
 import com.zylex.carbot.repository.CarRepository;
 import com.zylex.carbot.repository.FilialRepository;
-import com.zylex.carbot.service.driver.DriverManager;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.openqa.selenium.By;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Service
 public class ParseProcessor {
@@ -22,43 +23,60 @@ public class ParseProcessor {
 
     private final CarRepository carRepository;
 
-    private final DriverManager driverManager;
-
     @Autowired
     public ParseProcessor(FilialRepository filialRepository,
-                          CarRepository carRepository,
-                          DriverManager driverManager) {
+                          CarRepository carRepository) {
         this.filialRepository = filialRepository;
         this.carRepository = carRepository;
-        this.driverManager = driverManager;
     }
 
     public void parse() {
-        List<Filial> filials = filialRepository.findAll();
-        for (Filial filial : filials) {
-            String url = "https://" + filial.getDealer().getLink() + "/ds/cars/vesta/sw-cross/prices.html";
-            if (!filial.getCode().isEmpty()) {
-                url += "?dealer=" + filial.getCode();
-            }
-            driverManager.getDriver().navigate().to(url);
-            driverManager.waitElement(By::id, "configurator");
-
-            Document document = Jsoup.parse(driverManager.getDriver().getPageSource());
-            Element carElement = document.selectFirst("div#12290960");
-            String equipment = carElement.selectFirst("p.kompl_name").text();
-            Element hasDealerElement = carElement.selectFirst("p.has_dealer");
-            if (hasDealerElement == null) {
-                continue;
-            }
-            Elements colorElements = hasDealerElement.select("span.color_dealer");
-            for (Element colorElement : colorElements) {
-                String color = colorElement.attr("title");
-                Car car = new Car(filial, equipment, color);
-                if (carRepository.findByFilialAndEquipmentAndColor(filial, equipment, color) == null) {
-                    carRepository.save(car);
-                    System.out.println(car);
+        try {
+            List<Car> totalParsedCar = parseFilials();
+            System.out.println("Parsing finished");
+            for (Car parsedCar : totalParsedCar) {
+                Car repositoryCar = carRepository.findByFilialAndEquipmentAndColor(parsedCar.getFilial(), parsedCar.getEquipment(), parsedCar.getColor());
+                if (repositoryCar == null) {
+                    carRepository.save(parsedCar);
+                    System.out.println(parsedCar);
+                } else {
+                    if (repositoryCar.getStatus().equals(CarStatus.REMOVED.toString())) {
+                        repositoryCar.setStatus("NEW");
+                        carRepository.save(parsedCar);
+                        System.out.println("Car status changed " + repositoryCar);
+                    }
                 }
             }
+
+            List<Car> existedCars = carRepository.findAll();
+            for (Car existedCar : existedCars) {
+                if (!totalParsedCar.contains(existedCar)) {
+                    existedCar.setStatus(CarStatus.REMOVED.toString());
+                    System.out.println("Car removed: " + existedCar);
+                    carRepository.save(existedCar);
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ParseProcessorException(e.getMessage(), e);
+        }
+    }
+
+    private List<Car> parseFilials() throws InterruptedException, ExecutionException {
+        ExecutorService service = Executors.newWorkStealingPool();
+        try {
+            List<CallableFilialParser> callableFilialParsers = new ArrayList<>();
+            for (Filial filial : filialRepository.findAll()) {
+                callableFilialParsers.add(new CallableFilialParser(filial));
+            }
+            List<Future<List<Car>>> futureFilialParsers = service.invokeAll(callableFilialParsers);
+
+            List<Car> totalParsedCars = new ArrayList<>();
+            for (Future<List<Car>> carList : futureFilialParsers) {
+                totalParsedCars.addAll(carList.get());
+            }
+            return totalParsedCars;
+        } finally {
+            service.shutdown();
         }
     }
 }

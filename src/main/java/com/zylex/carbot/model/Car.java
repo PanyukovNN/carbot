@@ -18,13 +18,16 @@ public class Car {
 
     private String color;
 
+    private String status;
+
     public Car() {
     }
 
-    public Car(Filial filial, String equipment, String color) {
+    public Car(Filial filial, String equipment, String color, String status) {
         this.filial = filial;
         this.equipment = equipment;
         this.color = color;
+        this.status = status;
     }
 
     public long getId() {
@@ -59,20 +62,27 @@ public class Car {
         this.color = color;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Car car = (Car) o;
-        return id == car.id &&
-                Objects.equals(filial, car.filial) &&
+        return Objects.equals(filial, car.filial) &&
                 Objects.equals(equipment, car.equipment) &&
                 Objects.equals(color, car.color);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, filial, equipment, color);
+        return Objects.hash(filial, equipment, color);
     }
 
     @Override
