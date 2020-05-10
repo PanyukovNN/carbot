@@ -20,7 +20,7 @@ public class Filial {
 
     private String code;
 
-    @OneToMany(mappedBy="filial", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "filial", fetch = FetchType.EAGER)
     private List<Car> cars = new ArrayList<>();
 
     public Filial() {

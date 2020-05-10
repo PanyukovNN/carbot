@@ -14,7 +14,8 @@ public class Car {
     @ManyToOne
     private Filial filial;
 
-    private String equipment;
+    @ManyToOne
+    private Equipment equipment;
 
     private String color;
 
@@ -23,7 +24,7 @@ public class Car {
     public Car() {
     }
 
-    public Car(Filial filial, String equipment, String color, String status) {
+    public Car(Filial filial, Equipment equipment, String color, String status) {
         this.filial = filial;
         this.equipment = equipment;
         this.color = color;
@@ -46,11 +47,11 @@ public class Car {
         this.filial = filial;
     }
 
-    public String getEquipment() {
+    public Equipment getEquipment() {
         return equipment;
     }
 
-    public void setEquipment(String equipment) {
+    public void setEquipment(Equipment equipment) {
         this.equipment = equipment;
     }
 
