@@ -1,9 +1,6 @@
 package com.zylex.carbot.view;
 
-import com.zylex.carbot.model.Car;
-import com.zylex.carbot.model.CarStatus;
-import com.zylex.carbot.model.Equipment;
-import com.zylex.carbot.model.Filial;
+import com.zylex.carbot.model.*;
 import com.zylex.carbot.repository.CarRepository;
 import com.zylex.carbot.repository.EquipmentRepository;
 import org.springframework.stereotype.Service;
@@ -24,10 +21,16 @@ public class View {
         this.equipmentRepository = equipmentRepository;
     }
 
-    public void printOutput() {
+    public void printOutput(Model model) {
         List<String> colors = Arrays.asList("Ледниковый", "Марс", "Сердолик", "Ангкор", "Карфаген", "Дайвинг", "Фантом", "Плутон", "Маэстро", "Платина");
-        Equipment equipment = equipmentRepository.findById(2L).get();
-        System.out.println("Комплектация: \"" + equipment.getName() + "\"");
+        List<Equipment> equipments = equipmentRepository.findByModel(model);
+        for (Equipment equipment : equipments) {
+            printEquipment(colors, equipment);
+        }
+    }
+
+    private void printEquipment(List<String> colors, Equipment equipment) {
+        System.out.println("\nКомплектация: \"" + equipment.getName() + "\"");
 
         Set<Filial> totalFilials = new HashSet<>();
         for (String color : colors) {

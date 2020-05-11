@@ -1,6 +1,8 @@
 package com.zylex.carbot;
 
 import com.zylex.carbot.controller.logger.ConsoleLogger;
+import com.zylex.carbot.model.Model;
+import com.zylex.carbot.repository.ModelRepository;
 import com.zylex.carbot.service.parser.ParseProcessor;
 import com.zylex.carbot.view.View;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -20,8 +22,9 @@ public class CarbotApplication {
     public static void main(String[] args) {
         ConsoleLogger.startMessage();
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CarbotApplication.class)) {
-            context.getBean(ParseProcessor.class).parse();
-            context.getBean(View.class).printOutput();
+            Model model = context.getBean(ModelRepository.class).findByName("VESTA SW CROSS");
+            context.getBean(ParseProcessor.class).parse(model);
+            context.getBean(View.class).printOutput(model);
         } finally {
             ConsoleLogger.endMessage();
         }

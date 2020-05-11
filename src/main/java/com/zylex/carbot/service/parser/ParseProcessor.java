@@ -6,7 +6,6 @@ import com.zylex.carbot.model.*;
 import com.zylex.carbot.repository.CarRepository;
 import com.zylex.carbot.repository.EquipmentRepository;
 import com.zylex.carbot.repository.FilialRepository;
-import com.zylex.carbot.repository.ModelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +21,6 @@ public class ParseProcessor {
 
     private final FilialRepository filialRepository;
 
-    private final ModelRepository modelRepository;
-
     private final EquipmentRepository equipmentRepository;
 
     private final CarRepository carRepository;
@@ -31,17 +28,14 @@ public class ParseProcessor {
     @Autowired
     public ParseProcessor(FilialRepository filialRepository,
                           CarRepository carRepository,
-                          ModelRepository modelRepository,
                           EquipmentRepository equipmentRepository) {
         this.filialRepository = filialRepository;
         this.carRepository = carRepository;
-        this.modelRepository = modelRepository;
         this.equipmentRepository = equipmentRepository;
     }
 
-    public void parse() {
+    public void parse(Model model) {
         try {
-            Model model = modelRepository.findByName("VESTA SW CROSS");
             List<Car> parsedCars = parseFilials(model);
 
             System.out.println("\nParsing finished");
