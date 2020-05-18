@@ -53,13 +53,13 @@ public class PersistenceJPAConfig {
 
         URI dbUri = new URI(System.getenv("DATABASE_URL"));
 
-        String dbLogin = dbUri.getUserInfo().split(":")[0];
-        String dbPassword = dbUri.getUserInfo().split(":")[1];
+        String username = dbUri.getUserInfo().split(":")[0];
+        String password = dbUri.getUserInfo().split(":")[1];
         String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
 
         dataSource.setUrl(dbUrl);
-        dataSource.setUsername(dbLogin);
-        dataSource.setPassword(dbPassword);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
         return dataSource;
     }
 
