@@ -15,6 +15,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 @Configuration
@@ -22,17 +24,17 @@ import java.util.Properties;
 @PropertySource(value = "classpath:application.properties")
 public class PersistenceJPAConfig {
 
-    @Value("${db.url}")
-    private String dbUrl;
-
-    @Value("${db.login}")
-    private String dbLogin;
-
-    @Value("${db.password}")
-    private String dbPassword;
+//    @Value("${db.url}")
+//    private String dbUrl;
+//
+//    @Value("${db.login}")
+//    private String dbLogin;
+//
+//    @Value("${db.password}")
+//    private String dbPassword;
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() throws URISyntaxException {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource());
         em.setPackagesToScan("com.zylex.carbot.model");
@@ -45,9 +47,16 @@ public class PersistenceJPAConfig {
     }
 
     @Bean
-    public DataSource dataSource() {
+    public DataSource dataSource() throws URISyntaxException {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
+
+        URI dbUri = new URI(System.getenv("DATABASE_URL"));
+
+        String dbLogin = dbUri.getUserInfo().split(":")[0];
+        String dbPassword = dbUri.getUserInfo().split(":")[1];
+        String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+
         dataSource.setUrl(dbUrl);
         dataSource.setUsername(dbLogin);
         dataSource.setPassword(dbPassword);
@@ -55,7 +64,7 @@ public class PersistenceJPAConfig {
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager() {
+    public PlatformTransactionManager transactionManager() throws URISyntaxException {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
 

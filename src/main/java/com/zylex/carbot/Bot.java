@@ -1,5 +1,6 @@
 package com.zylex.carbot;
 
+import com.zylex.carbot.controller.logger.ConsoleLogger;
 import com.zylex.carbot.model.Model;
 import com.zylex.carbot.repository.ModelRepository;
 import com.zylex.carbot.service.parser.ParseProcessor;
@@ -15,6 +16,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.concurrent.ExecutionException;
 
 @ComponentScan
 @EnableJpaRepositories
@@ -45,31 +48,26 @@ public class Bot extends TelegramLongPollingBot {
      * @param s Строка, которую необходимот отправить в качестве сообщения.
      */
     public synchronized void sendMsg(String chatId, String s) {
-        SendMessage message = new SendMessage();
-        message.enableMarkdown(true);
-        message.setChatId(chatId);
-        message.setText("Начинаю поиск автомобилей... \nПроцесс может занимать до нескольких минут");
-
         try {
+            SendMessage message = new SendMessage();
+            message.enableMarkdown(true);
+            message.setChatId(chatId);
+            message.setText("Начинаю поиск автомобилей... \nПроцесс займет не менее 10 минут");
             execute(message);
-        } catch (TelegramApiException e) {
-            LOG.error(e.getMessage(), e);
-        }
 
+            String output = "";
+            try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CarbotApplication.class)) {
+                message.setText("Приложение полностью инициализировано");
+                execute(message);
 
-        String output = "";
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CarbotApplication.class)) {
-            Model model = context.getBean(ModelRepository.class).findByName("VESTA SW CROSS");
-            context.getBean(ParseProcessor.class).parse(model);
-            output = context.getBean(View.class).process(model);
-        }
-
-         message.enableMarkdown(true);
-         message.setChatId(chatId);
-         message.setText("\n" + output);
-
-        try {
-            execute(message);
+                Model model = context.getBean(ModelRepository.class).findByName("VESTA SW CROSS");
+                context.getBean(ParseProcessor.class).parse(model);
+                output = context.getBean(View.class).process(model);
+                message.setText("\n" + output);
+                execute(message);
+            } catch (Exception e) {
+                ConsoleLogger.writeErrorMessage(e.getMessage(), e);
+            }
         } catch (TelegramApiException e) {
             LOG.error(e.getMessage(), e);
         }
