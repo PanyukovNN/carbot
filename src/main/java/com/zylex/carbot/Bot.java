@@ -19,8 +19,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.concurrent.ExecutionException;
 
-@ComponentScan
-@EnableJpaRepositories
 public class Bot extends TelegramLongPollingBot {
 
     private final static Logger LOG = LoggerFactory.getLogger(Bot.class);
@@ -61,6 +59,10 @@ public class Bot extends TelegramLongPollingBot {
                 execute(message);
 
                 Model model = context.getBean(ModelRepository.class).findByName("VESTA SW CROSS");
+
+                message.setText("Модель получена");
+                execute(message);
+
                 context.getBean(ParseProcessor.class).parse(model);
                 output = context.getBean(View.class).process(model);
                 message.setText("\n" + output);

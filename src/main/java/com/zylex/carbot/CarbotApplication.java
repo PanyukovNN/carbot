@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 
-//@ComponentScan
-//@EnableJpaRepositories
+@ComponentScan
+@EnableJpaRepositories
 public class CarbotApplication {
 
     public static final LocalDateTime BOT_START_TIME = LocalDateTime.now();
