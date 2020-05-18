@@ -50,18 +50,18 @@ public class Bot extends TelegramLongPollingBot {
             SendMessage message = new SendMessage();
             message.enableMarkdown(true);
             message.setChatId(chatId);
-            message.setText("Начинаю поиск автомобилей... \nПроцесс займет не менее 10 минут");
+            message.setText("Начинаю поиск автомобилей... \nПроцесс может занять несколько минут");
             execute(message);
 
             String output = "";
             try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CarbotApplication.class)) {
-                message.setText("Приложение полностью инициализировано");
-                execute(message);
+//                message.setText("Приложение полностью инициализировано");
+//                execute(message);
 
                 Model model = context.getBean(ModelRepository.class).findByName("VESTA SW CROSS");
 
-                message.setText("Модель получена");
-                execute(message);
+//                message.setText("Модель получена");
+//                execute(message);
 
                 context.getBean(ParseProcessor.class).parse(model);
                 output = context.getBean(View.class).process(model);
