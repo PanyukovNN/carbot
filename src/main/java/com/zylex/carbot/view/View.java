@@ -21,50 +21,52 @@ public class View {
         this.equipmentRepository = equipmentRepository;
     }
 
-    public void printOutput(Model model) {
+    public String process(Model model) {
         List<String> colors = Arrays.asList("Ледниковый", "Марс", "Сердолик", "Ангкор", "Карфаген", "Дайвинг", "Фантом", "Плутон", "Маэстро", "Платина");
         List<Equipment> equipments = equipmentRepository.findByModel(model);
-        for (Equipment equipment : equipments) {
-            printEquipment(colors, equipment);
-        }
+//        for (Equipment equipment : equipments) {
+//            printEquipment(colors, equipment);
+//        }
+        return buildOutput(colors, equipments.get(0));
     }
 
-    private void printEquipment(List<String> colors, Equipment equipment) {
-        System.out.println("\nКомплектация: \"" + equipment.getName() + "\"");
+    private String buildOutput(List<String> colors, Equipment equipment) {
+        String output = "";
+        output += "\nКомплектация: \"" + equipment.getName() + "\"\n";
 
         Set<Filial> totalFilials = new HashSet<>();
         for (String color : colors) {
             List<Car> cars = carRepository.findByColorContaining(color).stream()
                     .filter(car -> car.getEquipment().equals(equipment))
-                    .filter(car -> car.getStatus().equals(CarStatus.NEW.toString()))
                     .collect(Collectors.toList());
             Set<Filial> filials = new LinkedHashSet<>();
             for (Car car : cars) {
                 filials.add(car.getFilial());
             }
             totalFilials.addAll(filials);
-            System.out.println("\nАвтомобили цвета \"" + color + "\":");
+            output += "\nАвтомобили цвета \"" + color + "\":\n";
             int i = 0;
             for (Filial filial : filials) {
-                System.out.println(++i + ") " + filial.getAddress());
+                output += ++i + ") " + filial.getAddress() + "\n";
                 String url = "https://" + filial.getDealer().getLink() + equipment.getModel().getLinkPart();
                 if (!filial.getCode().isEmpty()) {
                     url += "?dealer=" + filial.getCode();
                 }
-                System.out.println(url);
+                output += url + "\n";
             }
             if (i == 0) {
-                System.out.println("Нет доступных автомобилей");
+                output += "Нет доступных автомобилей\n";
             }
         }
 
-        System.out.println("\nВсего автомобилей "
+        output += "\nВсего автомобилей "
                 + carRepository.findAll().stream()
                 .filter(car -> car.getEquipment().equals(equipment))
-                .filter(car -> car.getStatus().equals(CarStatus.NEW.toString()))
                 .count()
                 + " у "
                 + totalFilials.size()
-                + " дилеров.");
+                + " дилеров.";
+
+        return output;
     }
 }

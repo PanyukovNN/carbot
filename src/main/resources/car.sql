@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS car (
     filial_id    BIGINT NOT NULL,
     equipment_id BIGINT NOT NULL,
     color        VARCHAR(100),
-    status       VARCHAR(100),
     FOREIGN KEY (filial_id) REFERENCES filial(id),
     FOREIGN KEY (equipment_id) REFERENCES equipment(id)
 );

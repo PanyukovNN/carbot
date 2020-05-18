@@ -19,16 +19,13 @@ public class Car {
 
     private String color;
 
-    private String status;
-
     public Car() {
     }
 
-    public Car(Filial filial, Equipment equipment, String color, String status) {
+    public Car(Filial filial, Equipment equipment, String color) {
         this.filial = filial;
         this.equipment = equipment;
         this.color = color;
-        this.status = status;
     }
 
     public long getId() {
@@ -61,14 +58,6 @@ public class Car {
 
     public void setColor(String color) {
         this.color = color;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     @Override

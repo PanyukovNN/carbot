@@ -1,14 +1,16 @@
 package com.zylex.carbot;
 
 import com.zylex.carbot.controller.logger.ConsoleLogger;
-import com.zylex.carbot.model.Model;
-import com.zylex.carbot.repository.ModelRepository;
-import com.zylex.carbot.service.parser.ParseProcessor;
-import com.zylex.carbot.view.View;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.telegram.telegrambots.ApiContextInitializer;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 
 @ComponentScan
@@ -20,13 +22,15 @@ public class CarbotApplication {
     public static final boolean HEADLESS_DRIVER = false;
 
     public static void main(String[] args) {
-        ConsoleLogger.startMessage();
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CarbotApplication.class)) {
-            Model model = context.getBean(ModelRepository.class).findByName("VESTA SW CROSS");
-            context.getBean(ParseProcessor.class).parse(model);
-            context.getBean(View.class).printOutput(model);
-        } finally {
-            ConsoleLogger.endMessage();
+//        System.getProperties().put("proxySet", "true");
+//        System.getProperties().put("socksProxyHost", "127.0.0.1");
+//        System.getProperties().put("socksProxyPort", "9150");
+        ApiContextInitializer.init();
+        TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
+        try {
+            telegramBotsApi.registerBot(new Bot());
+        } catch (TelegramApiRequestException e) {
+            e.printStackTrace();
         }
     }
 }

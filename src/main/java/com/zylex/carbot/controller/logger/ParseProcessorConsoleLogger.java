@@ -16,6 +16,8 @@ public class ParseProcessorConsoleLogger extends ConsoleLogger {
 
     private static final AtomicInteger processedFilials = new AtomicInteger(0);
 
+    private static final AtomicInteger errorFilials = new AtomicInteger(0);
+
     public static void startLog(int totalFilials) {
         ParseProcessorConsoleLogger.totalFilials = totalFilials;
         writeInLine("\n");
@@ -28,9 +30,14 @@ public class ParseProcessorConsoleLogger extends ConsoleLogger {
                 totalFilials,
                 new DecimalFormat("#0.0").format(((double) processedFilials.get() / (double) totalFilials) * 100).replace(",", "."));
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
-        if (processedFilials.get() == totalFilials) {
+        if (processedFilials.get() + errorFilials.get() == totalFilials) {
             writeLineSeparator();
+            writeInLine("\nDuring parsing occurred " + errorFilials.get() + " errors.");
             LOG.info("Parsing completed.");
         }
+    }
+
+    public static void logFilialError() {
+        errorFilials.incrementAndGet();
     }
 }

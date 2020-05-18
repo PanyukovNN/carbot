@@ -44,12 +44,6 @@ public class ParseProcessor {
                 Car repositoryCar = carRepository.findByFilialAndEquipmentAndColor(parsedCar.getFilial(), parsedCar.getEquipment(), parsedCar.getColor());
                 if (repositoryCar == null) {
                     carRepository.save(parsedCar);
-                    System.out.println(parsedCar);
-                } else {
-                    if (!repositoryCar.getStatus().equals(CarStatus.NEW.toString())) {
-                        repositoryCar.setStatus("NEW");
-                        carRepository.save(parsedCar);
-                    }
                 }
             }
 
@@ -57,8 +51,7 @@ public class ParseProcessor {
                 List<Car> existedEquipmentCars = carRepository.findByEquipment(modelEquipment);
                 for (Car existedCar : existedEquipmentCars) {
                     if (!parsedCars.contains(existedCar)) {
-                        existedCar.setStatus(CarStatus.REMOVED.toString());
-                        carRepository.save(existedCar);
+                        carRepository.delete(existedCar);
                     }
                 }
             }

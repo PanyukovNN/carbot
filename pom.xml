@@ -36,9 +36,16 @@
 
         <servlet-api.version>2.5</servlet-api.version>
         <spring-data-jpa.version>2.2.7.RELEASE</spring-data-jpa.version>
+        <telegrambots.version>4.8.1</telegrambots.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambots</artifactId>
+            <version>${telegrambots.version}</version>
+        </dependency>
+
         <!--Selenium-->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
@@ -163,6 +170,30 @@
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <configuration>
+                    <assembleDirectory>target</assembleDirectory>
+                    <programs>
+                        <program>
+                            <mainClass>com.zylex.carbot.Bot</mainClass>
+                            <name>LadaCarBot</name>
+                        </program>
+                    </programs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

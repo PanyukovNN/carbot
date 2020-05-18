@@ -34,6 +34,7 @@ public class CallableFilialParser implements Callable<List<Car>> {
             ParseProcessorConsoleLogger.logFilial();
             return parseCars();
         } catch (IOException e) {
+            ParseProcessorConsoleLogger.logFilialError();
             return Collections.emptyList();
         }
     }
@@ -43,6 +44,9 @@ public class CallableFilialParser implements Callable<List<Car>> {
         List<Car> parsedCars = new ArrayList<>();
         for (Equipment equipment : equipments) {
             Element carElement = document.selectFirst("div#" + equipment.getCode());
+            if (carElement == null) {
+                continue;
+            }
             Element hasDealerElement = carElement.selectFirst("p.has_dealer");
             if (hasDealerElement == null) {
                 continue;
@@ -51,7 +55,7 @@ public class CallableFilialParser implements Callable<List<Car>> {
             Elements colorElements = hasDealerElement.select("span.color_dealer");
             for (Element colorElement : colorElements) {
                 String color = colorElement.attr("title");
-                Car car = new Car(filial, equipment, color, CarStatus.NEW.toString());
+                Car car = new Car(filial, equipment, color);
                 parsedCars.add(car);
             }
         }
