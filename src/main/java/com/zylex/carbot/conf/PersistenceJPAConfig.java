@@ -21,7 +21,7 @@ import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
-@PropertySource(value = "classpath:application.properties")
+//@PropertySource(value = "classpath:application.properties")
 public class PersistenceJPAConfig {
 
 //    @Value("${db.url}")
