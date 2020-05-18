@@ -183,7 +183,7 @@
                     <assembleDirectory>target</assembleDirectory>
                     <programs>
                         <program>
-                            <mainClass>com.zylex.carbot.Bot</mainClass>
+                            <mainClass>com.zylex.carbot.CarbotApplication</mainClass>
                             <name>LadaCarBot</name>
                         </program>
                     </programs>
