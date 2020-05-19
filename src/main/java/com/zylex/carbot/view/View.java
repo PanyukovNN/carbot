@@ -21,13 +21,9 @@ public class View {
         this.equipmentRepository = equipmentRepository;
     }
 
-    public String process(Model model) {
+    public String process(Equipment equipment) {
         List<String> colors = Arrays.asList("Ледниковый", "Марс", "Сердолик", "Ангкор", "Карфаген", "Дайвинг", "Фантом", "Плутон", "Маэстро", "Платина");
-        List<Equipment> equipments = equipmentRepository.findByModel(model);
-//        for (Equipment equipment : equipments) {
-//            printEquipment(colors, equipment);
-//        }
-        return buildOutput(colors, equipments.get(0));
+        return buildOutput(colors, equipment);
     }
 
     private String buildOutput(List<String> colors, Equipment equipment) {

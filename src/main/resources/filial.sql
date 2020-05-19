@@ -1,4 +1,4 @@
--- DROP TABLE IF EXISTS filial;
+DROP TABLE IF EXISTS filial;
 CREATE TABLE IF NOT EXISTS filial (
     id          SERIAL NOT NULL PRIMARY KEY,
     dealer_id   BIGINT NOT NULL,

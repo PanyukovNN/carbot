@@ -11,4 +11,6 @@ import java.util.List;
 public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
 
     List<Equipment> findByModel(Model model);
+
+    Equipment findByName(String name);
 }

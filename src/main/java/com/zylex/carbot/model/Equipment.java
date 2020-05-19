@@ -1,6 +1,7 @@
 package com.zylex.carbot.model;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -17,6 +18,9 @@ public class Equipment {
     private String name;
 
     private String code;
+
+    @ElementCollection
+    private List<String> colors;
 
     public Equipment() {
     }
