@@ -23,11 +23,11 @@ import java.util.*;
 @Component
 public class Bot extends TelegramLongPollingBot {
 
-    @Value("${bot.name}")
-    private String botName;
-
-    @Value("${token}")
-    private String token;
+//    @Value("${bot.name}")
+    private String botName = "LadaCarBot";
+//
+//    @Value("${token}")
+    private String token = System.getenv("TOKEN");
 
     private ModelRepository modelRepository;
 
