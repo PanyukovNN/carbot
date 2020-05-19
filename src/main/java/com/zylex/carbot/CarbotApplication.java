@@ -19,9 +19,9 @@ public class CarbotApplication {
     public static final boolean HEADLESS_DRIVER = false;
 
     public static void main(String[] args) {
-        System.getProperties().put("proxySet", "true");
-        System.getProperties().put("socksProxyHost", "127.0.0.1");
-        System.getProperties().put("socksProxyPort", "9150");
+//        System.getProperties().put("proxySet", "true");
+//        System.getProperties().put("socksProxyHost", "127.0.0.1");
+//        System.getProperties().put("socksProxyPort", "9150");
         ApiContextInitializer.init();
         SpringApplication.run(CarbotApplication.class, args);
     }
