@@ -55,25 +55,26 @@ public class Bot extends TelegramLongPollingBot {
         super(options);
     }
 
+    private Long chatId;
+
     @Override
     public void onUpdateReceived(Update update) {
-        Long chatId = update.getMessage().getChatId();
-
+        Model model = modelRepository.findByName("VESTA SW CROSS");
         try {
             if (update.hasMessage()) {
-                chooseEquipmentMessage(chatId);
+                this.chatId = update.getMessage().getChatId();
+                chooseEquipmentMessage(model);
             } else if (update.hasCallbackQuery()) {
-                Model model = modelRepository.findByName("VESTA SW CROSS");
+                String equipmentName = update.getCallbackQuery().getData();
+                Equipment equipment = equipmentRepository.findByName(equipmentName);
 
                 execute(new SendMessage()
                         .setChatId(chatId)
                         .setText("Начинаю поиск автомобилей... \nПроцесс может занять несколько минут"));
 
-                String equipmentName = update.getCallbackQuery().getData();
-                Equipment equipment = equipmentRepository.findByName(equipmentName);
-
                 parseProcessor.parse(model);
                 String output = "\n" + view.process(equipment);
+
                 execute(new SendMessage()
                         .setText(output)
                         .setChatId(update.getCallbackQuery().getMessage().getChatId()));
@@ -83,8 +84,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private void chooseEquipmentMessage(Long chatId) throws TelegramApiException {
-        Model model = modelRepository.findByName("VESTA SW CROSS");
+    private void chooseEquipmentMessage(Model model) throws TelegramApiException {
         List<Equipment> equipments = equipmentRepository.findByModel(model);
 
         InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
