@@ -8,20 +8,39 @@ import com.zylex.carbot.view.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.concurrent.ExecutionException;
-
+@Component
 public class Bot extends TelegramLongPollingBot {
 
     private final static Logger LOG = LoggerFactory.getLogger(Bot.class);
+
+    @Value("${bot.name}")
+    private String botName;
+
+    @Value("${token}")
+    private String token;
+
+    private ModelRepository modelRepository;
+
+    private ParseProcessor parseProcessor;
+
+    private View view;
+
+    @Autowired
+    public Bot(ModelRepository modelRepository,
+               ParseProcessor parseProcessor,
+               View view) {
+        this.modelRepository = modelRepository;
+        this.parseProcessor = parseProcessor;
+        this.view = view;
+    }
 
     public Bot() {
     }
@@ -30,21 +49,12 @@ public class Bot extends TelegramLongPollingBot {
         super(options);
     }
 
-    /**
-     * Метод для приема сообщений.
-     * @param update Содержит сообщение от пользователя.
-     */
     @Override
     public void onUpdateReceived(Update update) {
         String message = update.getMessage().getText();
         sendMsg(update.getMessage().getChatId().toString(), message);
     }
 
-    /**
-     * Метод для настройки сообщения и его отправки.
-     * @param chatId id чата
-     * @param s Строка, которую необходимот отправить в качестве сообщения.
-     */
     public synchronized void sendMsg(String chatId, String s) {
         try {
             SendMessage message = new SendMessage();
@@ -54,43 +64,29 @@ public class Bot extends TelegramLongPollingBot {
             execute(message);
 
             String output = "";
-            try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CarbotApplication.class)) {
-//                message.setText("Приложение полностью инициализировано");
-//                execute(message);
+            Model model = modelRepository.findByName("VESTA SW CROSS");
 
-                Model model = context.getBean(ModelRepository.class).findByName("VESTA SW CROSS");
+            message.setText("Модель получена");
+            execute(message);
 
-//                message.setText("Модель получена");
-//                execute(message);
-
-                context.getBean(ParseProcessor.class).parse(model);
-                output = context.getBean(View.class).process(model);
-                message.setText("\n" + output);
-                execute(message);
-            } catch (Exception e) {
-                ConsoleLogger.writeErrorMessage(e.getMessage(), e);
-            }
+            parseProcessor.parse(model);
+            output = view.process(model);
+            message.setText("\n" + output);
+            execute(message);
         } catch (TelegramApiException e) {
             LOG.error(e.getMessage(), e);
+            ConsoleLogger.writeErrorMessage(e.getMessage(), e);
         }
     }
 
 
-    /**
-     * Метод возвращает имя бота, указанное при регистрации.
-     * @return имя бота
-     */
     @Override
     public String getBotUsername() {
-        return "LadaCarBot";
+        return botName;
     }
 
-    /**
-     * Метод возвращает token бота для связи с сервером Telegram
-     * @return token для бота
-     */
     @Override
     public String getBotToken() {
-        return "1240387001:AAGLFmgJ7CFkaZDniXPRBi72QaWFbdf2buE";
+        return token;
     }
 }
