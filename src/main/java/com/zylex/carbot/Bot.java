@@ -99,7 +99,7 @@ public class Bot extends TelegramLongPollingBot {
         SendMessage message = new SendMessage();
         message.enableMarkdown(true);
         message.setChatId(chatId);
-        message.setText("Выберите комплектацию");
+        message.setText("Выберите комплектацию автомобиля " + model.getName());
         message.setReplyMarkup(keyboard);
         execute(message);
     }
