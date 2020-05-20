@@ -106,6 +106,7 @@ public class Bot extends TelegramLongPollingBot {
                 execute(message);
             }
         }
+        message.setText(text);
         execute(message);
     }
 
