@@ -38,7 +38,7 @@ public class ParseProcessor {
         try {
             List<Car> parsedCars = parseFilials(model);
 
-            System.out.println("\nParsing finished");
+            ParseProcessorConsoleLogger.endLog();
 
             for (Car parsedCar : parsedCars) {
                 Car repositoryCar = carRepository.findByFilialAndEquipmentAndColor(parsedCar.getFilial(), parsedCar.getEquipment(), parsedCar.getColor());

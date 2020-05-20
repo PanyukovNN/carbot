@@ -1,5 +1,7 @@
 package com.zylex.carbot;
 
+import com.zylex.carbot.model.ParsingTime;
+import com.zylex.carbot.repository.ParsingTimeRepository;
 import com.zylex.carbot.service.driver.DriverManager;
 import com.zylex.carbot.service.puller.FilialPuller;
 import org.springframework.beans.factory.annotation.Autowired;

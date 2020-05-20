@@ -2,7 +2,6 @@ package com.zylex.carbot.view;
 
 import com.zylex.carbot.model.*;
 import com.zylex.carbot.repository.CarRepository;
-import com.zylex.carbot.repository.EquipmentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -13,12 +12,8 @@ public class View {
 
     private final CarRepository carRepository;
 
-    private final EquipmentRepository equipmentRepository;
-
-    public View(CarRepository carRepository,
-                EquipmentRepository equipmentRepository) {
+    public View(CarRepository carRepository) {
         this.carRepository = carRepository;
-        this.equipmentRepository = equipmentRepository;
     }
 
     public String process(Equipment equipment) {
@@ -44,7 +39,7 @@ public class View {
             int i = 0;
             for (Filial filial : filials) {
                 output += ++i + ") " + filial.getAddress() + "\n";
-                String url = "https://" + filial.getDealer().getLink() + equipment.getModel().getLinkPart();
+                String url = filial.getDealer().getLink() + equipment.getModel().getLinkPart();
                 if (!filial.getCode().isEmpty()) {
                     url += "?dealer=" + filial.getCode();
                 }

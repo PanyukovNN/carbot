@@ -31,6 +31,8 @@ public class ParseProcessorConsoleLogger extends ConsoleLogger {
                 new DecimalFormat("#0.0").format(((double) processedFilials.get() / (double) totalFilials) * 100).replace(",", "."));
         writeInLine(StringUtils.repeat("\b", output.length()) + output);
         if (processedFilials.get() + errorFilials.get() == totalFilials) {
+            processedFilials.set(0);
+            errorFilials.set(0);
             writeLineSeparator();
             writeInLine("\nDuring parsing occurred " + errorFilials.get() + " errors.");
             LOG.info("Parsing completed.");
@@ -39,5 +41,11 @@ public class ParseProcessorConsoleLogger extends ConsoleLogger {
 
     public static void logFilialError() {
         errorFilials.incrementAndGet();
+    }
+
+    public static void endLog() {
+        String output = "Parsing finished.";
+        writeInLine("\n" + output);
+        LOG.info(output);
     }
 }
