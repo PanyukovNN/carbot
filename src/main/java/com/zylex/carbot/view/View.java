@@ -3,6 +3,8 @@ package com.zylex.carbot.view;
 import com.zylex.carbot.model.*;
 import com.zylex.carbot.repository.CarRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ public class View {
         this.carRepository = carRepository;
     }
 
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public String process(Equipment equipment) {
         List<String> colors = Arrays.asList("Ледниковый", "Марс", "Сердолик", "Ангкор", "Карфаген", "Дайвинг", "Фантом", "Плутон", "Маэстро", "Платина");
         return buildOutput(colors, equipment);

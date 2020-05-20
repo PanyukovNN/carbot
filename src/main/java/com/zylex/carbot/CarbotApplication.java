@@ -1,9 +1,5 @@
 package com.zylex.carbot;
 
-import com.zylex.carbot.model.ParsingTime;
-import com.zylex.carbot.repository.ParsingTimeRepository;
-import com.zylex.carbot.service.driver.DriverManager;
-import com.zylex.carbot.service.puller.FilialPuller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -12,13 +8,19 @@ import org.springframework.context.ApplicationContext;
 import org.telegram.telegrambots.ApiContextInitializer;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
-public class CarbotApplication {
+public class CarbotApplication implements CommandLineRunner {
 
     public static final LocalDateTime BOT_START_TIME = LocalDateTime.now();
 
     public static final boolean HEADLESS_DRIVER = false;
+
+    @Autowired
+    private ApplicationContext context;
 
     public static void main(String[] args) {
 //        System.getProperties().put("proxySet", "true");
@@ -26,5 +28,13 @@ public class CarbotApplication {
 //        System.getProperties().put("socksProxyPort", "9150");
         ApiContextInitializer.init();
         SpringApplication.run(CarbotApplication.class, args);
+    }
+
+    @Override
+    public void run(String... args) {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdownNow));
+        Thread parsingTask = context.getBean(ScheduledParsingTask.class);
+        scheduler.scheduleAtFixedRate(parsingTask, 0, 5, TimeUnit.MINUTES);
     }
 }

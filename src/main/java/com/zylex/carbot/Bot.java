@@ -3,13 +3,12 @@ package com.zylex.carbot;
 import com.zylex.carbot.controller.logger.ConsoleLogger;
 import com.zylex.carbot.model.Equipment;
 import com.zylex.carbot.model.Model;
-import com.zylex.carbot.model.ParsingTime;
 import com.zylex.carbot.repository.EquipmentRepository;
 import com.zylex.carbot.repository.ModelRepository;
 import com.zylex.carbot.repository.ParsingTimeRepository;
-import com.zylex.carbot.service.parser.ParseProcessor;
 import com.zylex.carbot.view.View;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -19,7 +18,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
@@ -35,8 +34,6 @@ public class Bot extends TelegramLongPollingBot {
 
     private EquipmentRepository equipmentRepository;
 
-    private ParseProcessor parseProcessor;
-
     private ParsingTimeRepository parsingTimeRepository;
 
     private View view;
@@ -46,12 +43,10 @@ public class Bot extends TelegramLongPollingBot {
     @Autowired
     public Bot(ModelRepository modelRepository,
                EquipmentRepository equipmentRepository,
-               ParseProcessor parseProcessor,
                ParsingTimeRepository parsingTimeRepository,
                View view) {
         this.modelRepository = modelRepository;
         this.equipmentRepository = equipmentRepository;
-        this.parseProcessor = parseProcessor;
         this.parsingTimeRepository = parsingTimeRepository;
         this.view = view;
     }
@@ -74,18 +69,9 @@ public class Bot extends TelegramLongPollingBot {
                 Long equipmentId = Long.parseLong(update.getCallbackQuery().getData());
                 Equipment equipment = equipmentRepository.findById(equipmentId).orElse(new Equipment());
 
-                parsingIfTime(model);
-
-                String output = "\n" + view.process(equipment);
-
-                if (output.length() > 4096) {
-                    while (output.length() > 4096) {
-                        String t = output.substring(0, 4095);
-                        t = t.substring(0, t.lastIndexOf("\n"));
-                        output = output.substring(t.length());
-                        sendMessage(t);
-                    }
-                }
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                String output = "Обновлено в " + parsingTimeRepository.findFirstByOrderByDateTimeDesc().getDateTime().format(formatter);
+                output += "\n" + view.process(equipment);
                 sendMessage(output);
             }
         } catch (TelegramApiException e) {
@@ -102,21 +88,21 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private void parsingIfTime(Model model) throws TelegramApiException {
-        ParsingTime lastParsing = parsingTimeRepository.findFirstByOrderByDateTimeDesc();
-        if (lastParsing == null || lastParsing.getDateTime().isBefore(LocalDateTime.now().minusHours(1))) {
-            sendMessage("Начинаю поиск автомобилей... \nПроцесс может занять несколько минут");
-            parseProcessor.parse(model);
-            parsingTimeRepository.save(new ParsingTime(LocalDateTime.now()));
-        }
-    }
-
     private void sendMessage(String text) throws TelegramApiException {
         Long chatId = update.getMessage().getChatId();
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(text);
         message.disableWebPagePreview();
+        if (text.length() > 4096) {
+            while (text.length() > 4096) {
+                String t = text.substring(0, 4095);
+                t = t.substring(0, t.lastIndexOf("\n"));
+                text = text.substring(t.length());
+                message.setText(t);
+                execute(message);
+            }
+        }
         execute(message);
     }
 

@@ -8,6 +8,8 @@ import com.zylex.carbot.repository.EquipmentRepository;
 import com.zylex.carbot.repository.FilialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,7 @@ public class ParseProcessor {
         this.equipmentRepository = equipmentRepository;
     }
 
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void parse(Model model) {
         try {
             List<Car> parsedCars = parseFilials(model);
