@@ -1,5 +1,7 @@
 package com.zylex.carbot;
 
+import com.zylex.carbot.repository.EquipmentRepository;
+import com.zylex.carbot.view.View;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -23,12 +25,18 @@ public class CarbotApplication implements CommandLineRunner {
     private ApplicationContext context;
 
     public static void main(String[] args) {
-//        System.getProperties().put("proxySet", "true");
-//        System.getProperties().put("socksProxyHost", "127.0.0.1");
-//        System.getProperties().put("socksProxyPort", "9150");
+        System.getProperties().put("proxySet", "true");
+        System.getProperties().put("socksProxyHost", "127.0.0.1");
+        System.getProperties().put("socksProxyPort", "9150");
         ApiContextInitializer.init();
         SpringApplication.run(CarbotApplication.class, args);
     }
+
+    @Autowired
+    EquipmentRepository equipmentRepository;
+
+    @Autowired
+    View view;
 
     @Override
     public void run(String... args) {

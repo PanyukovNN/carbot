@@ -24,10 +24,13 @@ import java.util.*;
 @Component
 public class Bot extends TelegramLongPollingBot {
 
-    private String botName = "LadaCarBot";
-
+//    private String botName = "TestLadaCarBot";
+//
 //    @Value("${token}")
 //    private String token;
+
+    private String botName = "LadaCarBot";
+
     private String token = System.getenv("TOKEN");
 
     private ModelRepository modelRepository;
@@ -58,6 +61,8 @@ public class Bot extends TelegramLongPollingBot {
         super(options);
     }
 
+    private Equipment equipment;
+
     @Override
     public void onUpdateReceived(Update update) {
         Model model = modelRepository.findByName("VESTA SW CROSS");
@@ -66,16 +71,22 @@ public class Bot extends TelegramLongPollingBot {
                 this.update = update;
                 chooseEquipmentMessage(model);
             } else if (update.hasCallbackQuery()) {
-                Long equipmentId = Long.parseLong(update.getCallbackQuery().getData());
-                Equipment equipment = equipmentRepository.findById(equipmentId).orElse(new Equipment());
+                String callbackQuery = update.getCallbackQuery().getData();
+                if (callbackQuery.contains("color:")) {
+                    String colorName = callbackQuery.replace("color:", "");
 
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-                String output = "Обновлено в " + parsingTimeRepository.findFirstByOrderByDateTimeDesc().
-                        getDateTime()
-                        .plusHours(3)
-                        .format(formatter);
-                output += "\n" + view.process(equipment);
-                sendMessage(output);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                    String output = "\n" + view.buildColorOutput(equipment, colorName);
+                    output += "\nОбновлено в " + parsingTimeRepository.findFirstByOrderByDateTimeDesc().
+                            getDateTime()
+                            .plusHours(3)
+                            .format(formatter);
+                    sendMessage(output);
+                } else if (callbackQuery.contains("equipment:")) {
+                    Long equipmentId = Long.parseLong(callbackQuery.replace("equipment:", ""));
+                    equipment = equipmentRepository.findById(equipmentId).orElse(new Equipment());
+                    chooseColor();
+                }
             }
         } catch (TelegramApiException e) {
             ConsoleLogger.writeErrorMessage(e.getMessage(), e);
@@ -118,7 +129,7 @@ public class Bot extends TelegramLongPollingBot {
         for (Equipment equipment : equipments) {
             keyboardRowList.add(Collections.singletonList(new InlineKeyboardButton()
                     .setText(equipment.getName())
-                    .setCallbackData(String.valueOf(equipment.getId()))));
+                    .setCallbackData("equipment:" + equipment.getId())));
         }
         keyboard.setKeyboard(keyboardRowList);
 
@@ -130,6 +141,25 @@ public class Bot extends TelegramLongPollingBot {
         execute(message);
     }
 
+    private void chooseColor() throws TelegramApiException {
+        List<String> colors = view.getColors();
+
+        InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboardRowList = new ArrayList<>();
+        for (String color : colors) {
+            keyboardRowList.add(Collections.singletonList(new InlineKeyboardButton()
+                    .setText(color)
+                    .setCallbackData("color:" + color)));
+        }
+        keyboard.setKeyboard(keyboardRowList);
+
+        SendMessage message = new SendMessage();
+        message.enableMarkdown(true);
+        message.setChatId(update.getMessage().getChatId());
+        message.setText("Выберите цвет");
+        message.setReplyMarkup(keyboard);
+        execute(message);
+    }
 
     @Override
     public String getBotUsername() {
