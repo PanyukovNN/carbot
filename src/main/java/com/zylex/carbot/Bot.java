@@ -70,7 +70,10 @@ public class Bot extends TelegramLongPollingBot {
                 Equipment equipment = equipmentRepository.findById(equipmentId).orElse(new Equipment());
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-                String output = "Обновлено в " + parsingTimeRepository.findFirstByOrderByDateTimeDesc().getDateTime().format(formatter);
+                String output = "Обновлено в " + parsingTimeRepository.findFirstByOrderByDateTimeDesc().
+                        getDateTime()
+                        .plusHours(3)
+                        .format(formatter);
                 output += "\n" + view.process(equipment);
                 sendMessage(output);
             }

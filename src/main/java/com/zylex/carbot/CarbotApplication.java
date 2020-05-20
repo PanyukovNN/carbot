@@ -35,6 +35,6 @@ public class CarbotApplication implements CommandLineRunner {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdownNow));
         Thread parsingTask = context.getBean(ScheduledParsingTask.class);
-        scheduler.scheduleAtFixedRate(parsingTask, 0, 5, TimeUnit.MINUTES);
+        scheduler.scheduleAtFixedRate(parsingTask, 0, 2, TimeUnit.HOURS);
     }
 }
