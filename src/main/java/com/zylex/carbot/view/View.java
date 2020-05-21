@@ -34,7 +34,7 @@ public class View {
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public String process(Equipment equipment) {
+    public String buildAllColorOutput(Equipment equipment) {
         return buildOutput(equipment);
     }
 
@@ -84,7 +84,7 @@ public class View {
         return output;
     }
 
-    public String buildColorOutput(Equipment equipment, String color) {
+    public String buildSingleColorOutput(Equipment equipment, String color) {
         String output = "";
         output += "\nКомплектация: \"" + equipment.getName() + "\"\n";
 

@@ -21,6 +21,9 @@ public class Model {
     @OneToMany(mappedBy = "model", fetch = FetchType.EAGER)
     private List<Equipment> equipments = new ArrayList<>();
 
+//    @OneToMany(fetch = FetchType.EAGER)
+//    private List<Color> colors = new ArrayList<>();
+
     public Model() {
     }
 
@@ -60,6 +63,14 @@ public class Model {
     public void setEquipments(List<Equipment> equipments) {
         this.equipments = equipments;
     }
+
+//    public List<Color> getColors() {
+//        return colors;
+//    }
+//
+//    public void setColors(List<Color> colors) {
+//        this.colors = colors;
+//    }
 
     @Override
     public boolean equals(Object o) {

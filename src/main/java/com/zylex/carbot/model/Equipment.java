@@ -19,9 +19,6 @@ public class Equipment {
 
     private String code;
 
-    @ElementCollection
-    private List<String> colors;
-
     public Equipment() {
     }
 

@@ -75,7 +75,7 @@ public class Bot extends TelegramLongPollingBot {
             } else if (update.hasCallbackQuery()) {
                 Long chatId = update.getCallbackQuery().getMessage().getChatId();
                 String callbackQuery = update.getCallbackQuery().getData();
-                // callbackQuery example: "equipment:1|color:Ледниковый"
+
                 if (!callbackQuery.contains(COLOR_TAG)) {
                     Long equipmentId = Long.parseLong(callbackQuery.replace(EQUIPMENT_TAG, ""));
                     chooseColor(chatId, equipmentId);
@@ -84,10 +84,13 @@ public class Bot extends TelegramLongPollingBot {
                     Long equipmentId = Long.parseLong(queryParts[0].replace(EQUIPMENT_TAG, ""));
                     String colorName = queryParts[1].replace(COLOR_TAG, "");
 
-                    Equipment equipment = equipmentRepository.findById(equipmentId).get();
+                    Equipment equipment = equipmentRepository.findById(equipmentId)
+                            .orElseThrow(IllegalArgumentException::new);
 
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-                    String output = "\n" + view.buildColorOutput(equipment, colorName);
+                    String output = colorName.equals("all")
+                            ? view.buildAllColorOutput(equipment)
+                            : view.buildSingleColorOutput(equipment, colorName);
                     output += "\nОбновлено в " + parsingTimeRepository.findFirstByOrderByDateTimeDesc().
                             getDateTime()
                             .plusHours(3)
@@ -135,7 +138,7 @@ public class Bot extends TelegramLongPollingBot {
         for (Equipment equipment : equipments) {
             keyboardRowList.add(Collections.singletonList(new InlineKeyboardButton()
                     .setText(equipment.getName())
-                    .setCallbackData("equipment:" + equipment.getId())));
+                    .setCallbackData(EQUIPMENT_TAG + equipment.getId())));
         }
         keyboard.setKeyboard(keyboardRowList);
 
@@ -158,6 +161,9 @@ public class Bot extends TelegramLongPollingBot {
                     .setText(colorName + " (" + colors.get(colorName) + ")")
                     .setCallbackData(callbackQuery + colorName)));
         }
+        keyboardRowList.add(Collections.singletonList(new InlineKeyboardButton()
+                .setText("Все цвета")
+                .setCallbackData(callbackQuery + "all")));
         keyboard.setKeyboard(keyboardRowList);
 
         SendMessage message = new SendMessage();
