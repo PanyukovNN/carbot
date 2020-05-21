@@ -14,7 +14,20 @@ public class View {
 
     private final CarRepository carRepository;
 
-    private List<String> colors = Arrays.asList("Ледниковый", "Марс", "Сердолик", "Ангкор", "Карфаген", "Дайвинг", "Фантом", "Плутон", "Маэстро", "Платина");
+    private Map<String, String> colors = new LinkedHashMap<>();
+
+    {
+        colors.put("Ледниковый", "Белый");
+        colors.put("Марс", "Оранжевый");
+        colors.put("Сердолик", "Красный");
+        colors.put("Ангкор", "Коричневый");
+        colors.put("Карфаген", "Серо-бежевый");
+        colors.put("Дайвинг", "Ярко-синий");
+        colors.put("Фантом", "Серо-голубой");
+        colors.put("Плутон", "Серый");
+        colors.put("Маэстро", "Черный");
+        colors.put("Платина", "Серебристый");
+    }
 
     public View(CarRepository carRepository) {
         this.carRepository = carRepository;
@@ -30,7 +43,7 @@ public class View {
         output += "\nКомплектация: \"" + equipment.getName() + "\"\n";
 
         Set<Filial> totalFilials = new HashSet<>();
-        for (String color : colors) {
+        for (String color : colors.keySet()) {
             output += findByColor(equipment, totalFilials, color);
         }
 
@@ -55,7 +68,7 @@ public class View {
             filials.add(car.getFilial());
         }
         totalFilials.addAll(filials);
-        output += "\nАвтомобили цвета \"" + color + "\":\n";
+        output += "\nАвтомобили цвета \"" + color + "\" (" + colors.get(color) + "):\n";
         int i = 0;
         for (Filial filial : filials) {
             output += ++i + ") " + filial.getAddress() + "\n";
@@ -81,7 +94,7 @@ public class View {
         return output;
     }
 
-    public List<String> getColors() {
+    public Map<String, String> getColors() {
         return colors;
     }
 }

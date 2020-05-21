@@ -41,7 +41,11 @@ public class Bot extends TelegramLongPollingBot {
 
     private View view;
 
-    private Update update;
+    private final String EQUIPMENT_TAG = "equipment:";
+
+    private final String COLOR_TAG = "color:";
+
+    private final String SERAPATOR = "_";
 
     @Autowired
     public Bot(ModelRepository modelRepository,
@@ -61,19 +65,26 @@ public class Bot extends TelegramLongPollingBot {
         super(options);
     }
 
-    private Equipment equipment;
-
     @Override
     public void onUpdateReceived(Update update) {
         Model model = modelRepository.findByName("VESTA SW CROSS");
         try {
             if (update.hasMessage()) {
-                this.update = update;
-                chooseEquipmentMessage(model);
+                Long chatId = update.getMessage().getChatId();
+                chooseEquipmentMessage(model, chatId);
             } else if (update.hasCallbackQuery()) {
+                Long chatId = update.getCallbackQuery().getMessage().getChatId();
                 String callbackQuery = update.getCallbackQuery().getData();
-                if (callbackQuery.contains("color:")) {
-                    String colorName = callbackQuery.replace("color:", "");
+                // callbackQuery example: "equipment:1|color:Ледниковый"
+                if (!callbackQuery.contains(COLOR_TAG)) {
+                    Long equipmentId = Long.parseLong(callbackQuery.replace(EQUIPMENT_TAG, ""));
+                    chooseColor(chatId, equipmentId);
+                } else {
+                    String[] queryParts = callbackQuery.split(SERAPATOR);
+                    Long equipmentId = Long.parseLong(queryParts[0].replace(EQUIPMENT_TAG, ""));
+                    String colorName = queryParts[1].replace(COLOR_TAG, "");
+
+                    Equipment equipment = equipmentRepository.findById(equipmentId).get();
 
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
                     String output = "\n" + view.buildColorOutput(equipment, colorName);
@@ -81,11 +92,7 @@ public class Bot extends TelegramLongPollingBot {
                             getDateTime()
                             .plusHours(3)
                             .format(formatter);
-                    sendMessage(output);
-                } else if (callbackQuery.contains("equipment:")) {
-                    Long equipmentId = Long.parseLong(callbackQuery.replace("equipment:", ""));
-                    equipment = equipmentRepository.findById(equipmentId).orElse(new Equipment());
-                    chooseColor();
+                    sendMessage(output, chatId);
                 }
             }
         } catch (TelegramApiException e) {
@@ -102,8 +109,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMessage(String text) throws TelegramApiException {
-        Long chatId = update.getMessage().getChatId();
+    private void sendMessage(String text, Long chatId) throws TelegramApiException {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(text);
@@ -121,7 +127,7 @@ public class Bot extends TelegramLongPollingBot {
         execute(message);
     }
 
-    private void chooseEquipmentMessage(Model model) throws TelegramApiException {
+    private void chooseEquipmentMessage(Model model, Long chatId) throws TelegramApiException {
         List<Equipment> equipments = equipmentRepository.findByModel(model);
 
         InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
@@ -135,27 +141,28 @@ public class Bot extends TelegramLongPollingBot {
 
         SendMessage message = new SendMessage();
         message.enableMarkdown(true);
-        message.setChatId(update.getMessage().getChatId());
+        message.setChatId(chatId);
         message.setText("Выберите комплектацию автомобиля " + model.getName());
         message.setReplyMarkup(keyboard);
         execute(message);
     }
 
-    private void chooseColor() throws TelegramApiException {
-        List<String> colors = view.getColors();
+    private void chooseColor(Long chatId, Long equipmentId) throws TelegramApiException {
+        Map<String, String> colors = view.getColors();
 
         InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboardRowList = new ArrayList<>();
-        for (String color : colors) {
+        String callbackQuery = EQUIPMENT_TAG + equipmentId + SERAPATOR + COLOR_TAG;
+        for (String colorName : colors.keySet()) {
             keyboardRowList.add(Collections.singletonList(new InlineKeyboardButton()
-                    .setText(color)
-                    .setCallbackData("color:" + color)));
+                    .setText(colorName + " (" + colors.get(colorName) + ")")
+                    .setCallbackData(callbackQuery + colorName)));
         }
         keyboard.setKeyboard(keyboardRowList);
 
         SendMessage message = new SendMessage();
         message.enableMarkdown(true);
-        message.setChatId(update.getMessage().getChatId());
+        message.setChatId(chatId);
         message.setText("Выберите цвет");
         message.setReplyMarkup(keyboard);
         execute(message);
