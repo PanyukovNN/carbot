@@ -32,7 +32,7 @@
         <jstl.version>1.2</jstl.version>
         <hibernate.version>5.4.10.Final</hibernate.version>
         <spring.version>5.2.3.RELEASE</spring.version>
-        <logback-classic.version>1.2.3</logback-classic.version>
+        <logback-classic.version>1.2.9</logback-classic.version>
 
         <servlet-api.version>2.5</servlet-api.version>
         <spring-data-jpa.version>2.2.7.RELEASE</spring-data-jpa.version>
